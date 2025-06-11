@@ -89,9 +89,9 @@ for i in range(4):
 Using  the [GaussianNB](https://scikit-learn.org/stable/modules/generated/sklearn.naive_bayes.GaussianNB.html) function construct the  Gaussian  Bayes classifier using only one feature. Which feature will you choose? Calculate the confusion matrix (normalized as to show rates), ROC AUC score and plot ROC curve. Do this both for training and validation set. Plot both curves on the same plot.  
 
 ```{python}
-features_names = ['a0']
-train = {'type': 'train', 'data': data_train[features_names], 'labels': data_train['counterfeit']}
-test = {'type': 'test', 'data': data_test[features_names], 'labels': data_test['counterfeit']}
+features_1 = ['a0']
+train = {'type': 'train', 'data': data_train[features_1], 'labels': data_train['counterfeit']}
+test = {'type': 'test', 'data': data_test[features_1], 'labels': data_test['counterfeit']}
 ```
 
 ```{python}
@@ -102,7 +102,7 @@ gnb = GaussianNB()
 gnb.fit(train['data'], train['labels'])
 for set in train, test:
     accuracy = accuracy_score(set['labels'], gnb.predict(set['data']))
-    print(f"{set['type']} accuracy using feature '{features_names}': {accuracy:.3f}")
+    print(f"{set['type']} accuracy using feature '{features_1}': {accuracy:.3f}")
 ```
 
 <!-- #region editable=true slideshow={"slide_type": ""} -->
@@ -137,7 +137,7 @@ plt.plot(fpr_test, tpr_test, label=f'Test ROC')
 plt.plot([0,1], [0,1], 'k--')
 plt.xlabel('False Positive Rate')
 plt.ylabel('True Positive Rate')
-plt.title(f'ROC Curve using feature: {features_names}')
+plt.title(f'ROC Curve using feature: {features_1}')
 plt.legend()
 plt.show()
 ```
@@ -159,14 +159,14 @@ Same as Problem 1 but now construct Gaussian Naive Bayes using two features. Add
 <!-- #endregion -->
 
 ```{python}
-features_names = ['a0']
-train = {'type': 'train', 'data': data_train[features_names], 'labels': data_train['counterfeit']}
-test = {'type': 'test', 'data': data_test[features_names], 'labels': data_test['counterfeit']}
+features_1 = ['a0']
+train_1 = {'type': 'train', 'data': data_train[features_1], 'labels': data_train['counterfeit']}
+test_1 = {'type': 'test', 'data': data_test[features_1], 'labels': data_test['counterfeit']}
 features_2 = ['a0', 'a1']
 train_2 = {'type': 'train', 'data': data_train[features_2], 'labels': data_train['counterfeit']}
 test_2 = {'type': 'test', 'data': data_test[features_2], 'labels': data_test['counterfeit']}
 
-for train, test, features_names in (train, test, features_names), (train_2, test_2, features_2):
+for train, test, features_names in (train_1, test_1, features_1), (train_2, test_2, features_2):
     gnb = GaussianNB()
     gnb.fit(train['data'], train['labels'])
     for set in train, test:
@@ -198,9 +198,9 @@ Same as Problem 2 but now implement Gaussian Naive Bayes using all features. Sho
 ```
 
 ```{python}
-features_names = ['a0']
-train = {'type': 'train', 'data': data_train[features_names], 'labels': data_train['counterfeit']}
-test = {'type': 'test', 'data': data_test[features_names], 'labels': data_test['counterfeit']}
+features_1 = ['a0']
+train_1 = {'type': 'train', 'data': data_train[features_1], 'labels': data_train['counterfeit']}
+test_1 = {'type': 'test', 'data': data_test[features_1], 'labels': data_test['counterfeit']}
 features_2 = ['a0', 'a1']
 train_2 = {'type': 'train', 'data': data_train[features_2], 'labels': data_train['counterfeit']}
 test_2 = {'type': 'test', 'data': data_test[features_2], 'labels': data_test['counterfeit']}
@@ -215,7 +215,7 @@ test_3 = {'type': 'test', 'data': data_test[features_3], 'labels': data_test['co
 
 ```{python}
 classifiers = [None] * 3
-for i, (train, test, features_names) in enumerate([(train, test, features_names), (train_2, test_2, features_2), (train_3, test_3, features_3)]):
+for i, (train, test, features_names) in enumerate([(train_1, test_1, features_1), (train_2, test_2, features_2), (train_3, test_3, features_3)]):
   classifiers[i] = GaussianNB()
   classifiers[i].fit(train['data'], train['labels'])
 
@@ -225,13 +225,13 @@ print(f"{test_3['type']} confusion matrix (normalized):\n", cm)
 
 plt.figure(figsize=(6, 5))
 auc_scores = []
-for i, (test_set, features_names) in enumerate([(test, features_names), (test_2, features_2), (test_3, features_3)]):
+for i, (test_set, features_names) in enumerate([(test_1, features_1), (test_2, features_2), (test_3, features_3)]):
     print(i)
     y_proba = classifiers[i].predict_proba(test_set['data'])[:, 1]
     auc = roc_auc_score(test_set['labels'], y_proba)
     auc_scores.append(auc)
     fpr, tpr, _ = roc_curve(test_set['labels'], y_proba)
-    plt.plot(fpr, tpr, label=f"{len(features_names)} features (AUC={auc:.2f})", linewidth=8/(i+1))
+    plt.plot(fpr, tpr, label=f"{len(features_names)} features (AUC={auc:.2f})")
 plt.plot([0, 1], [0, 1], 'k--')
 plt.xlabel('False Positive Rate')
 plt.ylabel('True Positive Rate')
