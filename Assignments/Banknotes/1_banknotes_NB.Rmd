@@ -1,0 +1,232 @@
+---
+jupyter:
+  jupytext:
+    text_representation:
+      extension: .Rmd
+      format_name: rmarkdown
+      format_version: '1.2'
+      jupytext_version: 1.17.2
+  kernelspec:
+    display_name: .venv
+    language: python
+    name: python3
+---
+
+<!-- #region editable=true slideshow={"slide_type": ""} -->
+# Counterfeit detection
+<!-- #endregion -->
+
+The task in this assignment is to detect the  counterfeit banknotes. The data set is based on [banknote authentication Data Set ](https://archive.ics.uci.edu/ml/datasets/banknote+authentication#) from UCI Machine Learning repository. The first three columns denote different parameters obtained from the photographs of the banknotes and last colum provides the label. Frankly as the dataset does not have any description I don't know  which labels corresponds to real and which to counterfeited banknotes. let's assume that label one (positive) denotes the clounterfeits. The set  [banknote_authentication.csv](./data/banknote_authentication.csv) can be found in the `data`  directory.
+
+```{python}
+import pandas as pd
+import numpy as np
+import matplotlib.pyplot as plt
+plt.style.use('dark_background')
+import scipy.stats as st
+```
+
+```{python editable=TRUE, slideshow={'slide_type': ''}}
+from sklearn.metrics import classification_report, ConfusionMatrixDisplay
+```
+
+```{python}
+import  matplotlib.pyplot as plt
+plt.rcParams['figure.figsize']=(8,8)
+```
+
+Please insert you  firstname  and name below
+
+Hubert, Hubert
+
+```{python}
+from  sklearn.model_selection import train_test_split
+seed = 31287
+```
+
+```{python}
+data = pd.read_csv('data/banknotes_data.csv')
+```
+
+```{python}
+data.head()
+```
+
+```{python tags=c("skip")}
+data.describe()
+```
+
+```{python tags=c("skip")}
+data.info()
+```
+
+```{python}
+data_train, data_test = train_test_split(data, test_size=0.2, shuffle=True, stratify=data.loc[:,'counterfeit'], random_state=seed)
+```
+
+```{python editable=TRUE, slideshow={'slide_type': ''}}
+data_train
+```
+
+```{python}
+lbls_train = data_train['counterfeit']
+lbls_test = data_test['counterfeit']
+```
+
+```{python}
+fig, ax = plt.subplots(1,4, figsize=(22,5))
+for i in range(4):
+    ax[i].hist(data_train[lbls_train==0].iloc[:,i], bins=32, histtype='step', color='blue')
+    ax[i].hist(data_train[lbls_train==1].iloc[:,i], bins=32, histtype='step', color='red')
+    ax[i].hist(data_train[lbls_train==0].iloc[:,i], bins=32, histtype='bar', color='lightblue', alpha=0.25)
+    ax[i].hist(data_train[lbls_train==1].iloc[:,i], bins=32, histtype='bar', color='orange', alpha =0.25)
+```
+
+<!-- #region editable=true slideshow={"slide_type": ""} -->
+## Problem 1
+<!-- #endregion -->
+
+Using  the [GaussianNB](https://scikit-learn.org/stable/modules/generated/sklearn.naive_bayes.GaussianNB.html) function construct the  Gaussian  Bayes classifier using only one feature. Which feature will you choose? Calculate the confusion matrix (normalized as to show rates), ROC AUC score and plot ROC curve. Do this both for training and validation set. Plot both curves on the same plot.  
+
+```{python}
+features_names = ['a1']
+train = {'type': 'train', 'data': data_train[features_names], 'labels': data_train['counterfeit']}
+test = {'type': 'test', 'data': data_test[features_names], 'labels': data_test['counterfeit']}
+```
+
+```{python}
+from sklearn.naive_bayes import GaussianNB
+from sklearn.metrics import accuracy_score
+
+gnb = GaussianNB()
+gnb.fit(train['data'], train['labels'])
+for set in train, test:
+    accuracy = accuracy_score(set['labels'], gnb.predict(set['data']))
+    print(f"{set['type']} accuracy using feature '{features_names}': {accuracy:.3f}")
+```
+
+<!-- #region editable=true slideshow={"slide_type": ""} -->
+__Hint__ For calculating metrics and plotting ROC curves you may use functions from scikit-learn: `roc_curve`, `roc_auc_score` and `confusion matrix`. For estimating normal distribution parameters  use `norm.fit` `from scipy.stats`. Use `norm.pdf` for normal probability density function.
+<!-- #endregion -->
+
+```{python editable=TRUE, slideshow={'slide_type': ''}}
+from sklearn.metrics import confusion_matrix
+
+for set in train, test:
+    cm = confusion_matrix(set['labels'], gnb.predict(set['data']), normalize='true')
+    print(f"{set['type']} confusion matrix (normalized):\n", cm)
+```
+
+```{python}
+from sklearn.metrics import roc_auc_score
+
+for set in train, test:
+    auc = roc_auc_score(set['labels'], gnb.predict_proba(set['data'])[:, 1])
+    print(f"{set['type']} roc_auc_score:\n", auc)
+```
+
+```{python}
+from sklearn.metrics import roc_curve
+
+fpr_train, tpr_train, _ = roc_curve(lbls_train, gnb.predict_proba(train['data'])[:, 1])
+fpr_test, tpr_test, _ = roc_curve(lbls_test, gnb.predict_proba(test['data'])[:, 1])
+
+plt.figure(figsize=(4, 3))
+plt.plot(fpr_train, tpr_train, label=f'Train ROC')
+plt.plot(fpr_test, tpr_test, label=f'Test ROC')
+plt.plot([0,1], [0,1], 'k--')
+plt.xlabel('False Positive Rate')
+plt.ylabel('True Positive Rate')
+plt.title(f'ROC Curve using feature: {features_names}')
+plt.legend()
+plt.show()
+```
+
+<!-- #region editable=true slideshow={"slide_type": ""} -->
+Which feature did you choose?
+<!-- #endregion -->
+
+```{python editable=TRUE, slideshow={'slide_type': ''}}
+data_train['a1']
+```
+
+<!-- #region editable=true slideshow={"slide_type": ""} -->
+## Problem 2
+<!-- #endregion -->
+
+<!-- #region editable=true slideshow={"slide_type": ""} -->
+Same as Problem 1 but now construct Gaussian Naive Bayes using two features. Additionally  compare ROC curve obtained with this and previous  classifier on the test set. What is the improvement of AUC score on the test set?
+<!-- #endregion -->
+
+```{python}
+features_names = ['a1']
+train = {'type': 'train', 'data': data_train[features_names], 'labels': data_train['counterfeit']}
+test = {'type': 'test', 'data': data_test[features_names], 'labels': data_test['counterfeit']}
+features_2 = ['a1', 'a2']
+train_2 = {'type': 'train', 'data': data_train[features_2], 'labels': data_train['counterfeit']}
+test_2 = {'type': 'test', 'data': data_test[features_2], 'labels': data_test['counterfeit']}
+
+for train, test, features_names in (train, test, features_names), (train_2, test_2, features_2):
+    gnb = GaussianNB()
+    gnb.fit(train['data'], train['labels'])
+    for set in train, test:
+        accuracy = accuracy_score(set['labels'], gnb.predict(set['data']))
+        print(f"{set['type']} accuracy using feature '{features_names}': {accuracy:.3f}")
+    for set in train, test:
+        auc = roc_auc_score(set['labels'], gnb.predict_proba(set['data'])[:, 1])
+        print(f"{set['type']} roc_auc_score:\n", auc)
+    fpr_train, tpr_train, _ = roc_curve(lbls_train, gnb.predict_proba(train['data'])[:, 1])
+    fpr_test, tpr_test, _ = roc_curve(lbls_test, gnb.predict_proba(test['data'])[:, 1])
+
+    plt.figure(figsize=(4, 3))
+    plt.plot(fpr_train, tpr_train, label=f'Train ROC')
+    plt.plot(fpr_test, tpr_test, label=f'Test ROC')
+    plt.plot([0,1], [0,1], 'k--')
+    plt.xlabel('False Positive Rate')
+    plt.ylabel('True Positive Rate')
+    plt.title(f'ROC Curve using feature: {features_names}')
+    plt.legend()
+    plt.show()
+```
+
+<!-- #region editable=true slideshow={"slide_type": ""} -->
+## Problem 3
+<!-- #endregion -->
+
+```{python editable=TRUE, raw_mimetype="", slideshow={'slide_type': ''}, active="", eval=FALSE}
+Same as Problem 2 but now implement Gaussian Naive Bayes using all features. Show confusion matrix only for test set. Compare all three ROC curves on the test set, same with AUC score.
+```
+
+```{python}
+features_3 = ['a1', 'a2', 'a3']
+train = {'type': 'train', 'data': data_train[features_3], 'labels': data_train['counterfeit']}
+test = {'type': 'test', 'data': data_test[features_3], 'labels': data_test['counterfeit']}
+
+cm = confusion_matrix(test['labels'], gnb.predict(test['data']), normalize='true')
+print(f"{test['type']} confusion matrix (normalized):\n", cm)
+
+gnb = GaussianNB()
+gnb.fit(train['data'], train['labels'])
+for set in train, test:
+    accuracy = accuracy_score(set['labels'], gnb.predict(set['data']))
+    print(f"{set['type']} accuracy using feature '{features_3}': {accuracy:.3f}")
+for set in train, test:
+    auc = roc_auc_score(set['labels'], gnb.predict_proba(set['data'])[:, 1])
+    print(f"{set['type']} roc_auc_score:\n", auc)
+fpr_train, tpr_train, _ = roc_curve(lbls_train, gnb.predict_proba(train['data'])[:, 1])
+fpr_test, tpr_test, _ = roc_curve(lbls_test, gnb.predict_proba(test['data'])[:, 1])
+
+plt.figure(figsize=(4, 3))
+plt.plot(fpr_train, tpr_train, label=f'Train ROC')
+plt.plot(fpr_test, tpr_test, label=f'Test ROC')
+plt.plot([0,1], [0,1], 'k--')
+plt.xlabel('False Positive Rate')
+plt.ylabel('True Positive Rate')
+plt.title(f'ROC Curve using feature: {features_3}')
+plt.legend()
+plt.show()
+```
+
+```{python active="", eval=FALSE}
+
+```
