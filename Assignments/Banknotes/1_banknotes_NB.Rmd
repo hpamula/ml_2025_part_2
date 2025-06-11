@@ -159,7 +159,7 @@ Same as Problem 1 but now construct Gaussian Naive Bayes using two features. Add
 <!-- #endregion -->
 
 ```{python}
-features_names = ['a1']
+features_names = ['a0']
 train = {'type': 'train', 'data': data_train[features_names], 'labels': data_train['counterfeit']}
 test = {'type': 'test', 'data': data_test[features_names], 'labels': data_test['counterfeit']}
 features_2 = ['a0', 'a1']
@@ -198,32 +198,44 @@ Same as Problem 2 but now implement Gaussian Naive Bayes using all features. Sho
 ```
 
 ```{python}
+features_names = ['a0']
+train = {'type': 'train', 'data': data_train[features_names], 'labels': data_train['counterfeit']}
+test = {'type': 'test', 'data': data_test[features_names], 'labels': data_test['counterfeit']}
+features_2 = ['a0', 'a1']
+train_2 = {'type': 'train', 'data': data_train[features_2], 'labels': data_train['counterfeit']}
+test_2 = {'type': 'test', 'data': data_test[features_2], 'labels': data_test['counterfeit']}
 features_3 = ['a0', 'a1', 'a2', 'a3']
-train = {'type': 'train', 'data': data_train[features_3], 'labels': data_train['counterfeit']}
-test = {'type': 'test', 'data': data_test[features_3], 'labels': data_test['counterfeit']}
+train_3 = {'type': 'train', 'data': data_train[features_3], 'labels': data_train['counterfeit']}
+test_3 = {'type': 'test', 'data': data_test[features_3], 'labels': data_test['counterfeit']}
+```
 
-gnb = GaussianNB()
-gnb.fit(train['data'], train['labels'])
+```{python}
 
-cm = confusion_matrix(test['labels'], gnb.predict(test['data']), normalize='true')
-print(f"{test['type']} confusion matrix (normalized):\n", cm)
+```
 
-for set in train, test:
-    accuracy = accuracy_score(set['labels'], gnb.predict(set['data']))
-    print(f"{set['type']} accuracy using feature '{features_3}': {accuracy:.3f}")
-for set in train, test:
-    auc = roc_auc_score(set['labels'], gnb.predict_proba(set['data'])[:, 1])
-    print(f"{set['type']} roc_auc_score:\n", auc)
-fpr_train, tpr_train, _ = roc_curve(lbls_train, gnb.predict_proba(train['data'])[:, 1])
-fpr_test, tpr_test, _ = roc_curve(lbls_test, gnb.predict_proba(test['data'])[:, 1])
+```{python}
+classifiers = [None] * 3
+for i, (train, test, features_names) in enumerate([(train, test, features_names), (train_2, test_2, features_2), (train_3, test_3, features_3)]):
+  classifiers[i] = GaussianNB()
+  classifiers[i].fit(train['data'], train['labels'])
 
-plt.figure(figsize=(4, 3))
-plt.plot(fpr_train, tpr_train, label=f'Train ROC')
-plt.plot(fpr_test, tpr_test, label=f'Test ROC')
-plt.plot([0,1], [0,1], 'k--')
+cm = confusion_matrix(test_3['labels'], classifiers[2].predict(test_3['data']), normalize='true')
+print(f"{test_3['type']} confusion matrix (normalized):\n", cm)
+
+
+plt.figure(figsize=(6, 5))
+auc_scores = []
+for i, (test_set, features_names) in enumerate([(test, features_names), (test_2, features_2), (test_3, features_3)]):
+    print(i)
+    y_proba = classifiers[i].predict_proba(test_set['data'])[:, 1]
+    auc = roc_auc_score(test_set['labels'], y_proba)
+    auc_scores.append(auc)
+    fpr, tpr, _ = roc_curve(test_set['labels'], y_proba)
+    plt.plot(fpr, tpr, label=f"{len(features_names)} features (AUC={auc:.2f})", linewidth=8/(i+1))
+plt.plot([0, 1], [0, 1], 'k--')
 plt.xlabel('False Positive Rate')
 plt.ylabel('True Positive Rate')
-plt.title(f'ROC Curve using feature: {features_3}')
+plt.title('ROC Curves on Test Set')
 plt.legend()
 plt.show()
 ```
