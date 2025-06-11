@@ -202,11 +202,12 @@ features_3 = ['a1', 'a2', 'a3']
 train = {'type': 'train', 'data': data_train[features_3], 'labels': data_train['counterfeit']}
 test = {'type': 'test', 'data': data_test[features_3], 'labels': data_test['counterfeit']}
 
+gnb = GaussianNB()
+gnb.fit(train['data'], train['labels'])
+
 cm = confusion_matrix(test['labels'], gnb.predict(test['data']), normalize='true')
 print(f"{test['type']} confusion matrix (normalized):\n", cm)
 
-gnb = GaussianNB()
-gnb.fit(train['data'], train['labels'])
 for set in train, test:
     accuracy = accuracy_score(set['labels'], gnb.predict(set['data']))
     print(f"{set['type']} accuracy using feature '{features_3}': {accuracy:.3f}")
@@ -225,8 +226,4 @@ plt.ylabel('True Positive Rate')
 plt.title(f'ROC Curve using feature: {features_3}')
 plt.legend()
 plt.show()
-```
-
-```{python active="", eval=FALSE}
-
 ```
