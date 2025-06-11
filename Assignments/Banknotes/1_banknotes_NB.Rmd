@@ -89,7 +89,7 @@ for i in range(4):
 Using  the [GaussianNB](https://scikit-learn.org/stable/modules/generated/sklearn.naive_bayes.GaussianNB.html) function construct the  Gaussian  Bayes classifier using only one feature. Which feature will you choose? Calculate the confusion matrix (normalized as to show rates), ROC AUC score and plot ROC curve. Do this both for training and validation set. Plot both curves on the same plot.  
 
 ```{python}
-features_names = ['a1']
+features_names = ['a0']
 train = {'type': 'train', 'data': data_train[features_names], 'labels': data_train['counterfeit']}
 test = {'type': 'test', 'data': data_test[features_names], 'labels': data_test['counterfeit']}
 ```
@@ -147,7 +147,7 @@ Which feature did you choose?
 <!-- #endregion -->
 
 ```{python editable=TRUE, slideshow={'slide_type': ''}}
-data_train['a1']
+data_train['a0']
 ```
 
 <!-- #region editable=true slideshow={"slide_type": ""} -->
@@ -162,7 +162,7 @@ Same as Problem 1 but now construct Gaussian Naive Bayes using two features. Add
 features_names = ['a1']
 train = {'type': 'train', 'data': data_train[features_names], 'labels': data_train['counterfeit']}
 test = {'type': 'test', 'data': data_test[features_names], 'labels': data_test['counterfeit']}
-features_2 = ['a1', 'a2']
+features_2 = ['a0', 'a1']
 train_2 = {'type': 'train', 'data': data_train[features_2], 'labels': data_train['counterfeit']}
 test_2 = {'type': 'test', 'data': data_test[features_2], 'labels': data_test['counterfeit']}
 
@@ -198,7 +198,7 @@ Same as Problem 2 but now implement Gaussian Naive Bayes using all features. Sho
 ```
 
 ```{python}
-features_3 = ['a1', 'a2', 'a3']
+features_3 = ['a0', 'a1', 'a2', 'a3']
 train = {'type': 'train', 'data': data_train[features_3], 'labels': data_train['counterfeit']}
 test = {'type': 'test', 'data': data_test[features_3], 'labels': data_test['counterfeit']}
 
@@ -226,4 +226,8 @@ plt.ylabel('True Positive Rate')
 plt.title(f'ROC Curve using feature: {features_3}')
 plt.legend()
 plt.show()
+```
+
+```{python}
+
 ```
